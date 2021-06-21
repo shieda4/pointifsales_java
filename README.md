@@ -1,3 +1,3 @@
-# pointifsales_java
-# pointifsales_java
-# pointifsales_java
+# Point of Sales System
+A simple Point of sales System written in Java and using MySQL as its database.
+
