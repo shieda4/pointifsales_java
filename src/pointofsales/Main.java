@@ -5,8 +5,6 @@
  */
 package pointofsales;
 
-import java.awt.CardLayout;
-
 /**
  *
  * @author shieda
@@ -19,7 +17,13 @@ public class Main extends javax.swing.JFrame {
     public Main() {
         initComponents();
         setExtendedState(java.awt.Frame.MAXIMIZED_BOTH);
-
+        mainPanel.setEnabled(false);
+        mainPanel.setVisible(false);
+        pack();
+    }
+    
+    public void closeMainPanel(){
+        mainPanel.setVisible(false);
     }
 
     /**
@@ -31,63 +35,53 @@ public class Main extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        containerPanel = new javax.swing.JPanel();
-        startPanel = new javax.swing.JPanel();
-        newTransactionButton = new javax.swing.JButton();
-        mainPanel = new javax.swing.JPanel();
-        mainPanel1 = new pointofsales.MainPanel();
+        mainPanel = new pointofsales.MainPanel();
         menuBar = new javax.swing.JMenuBar();
-        jMenu1 = new javax.swing.JMenu();
-        jMenu2 = new javax.swing.JMenu();
+        newTransactionButton = new javax.swing.JMenu();
+        transactionsButton = new javax.swing.JMenu();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(1200, 675));
-        getContentPane().setLayout(new javax.swing.BoxLayout(getContentPane(), javax.swing.BoxLayout.LINE_AXIS));
 
-        containerPanel.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
-        containerPanel.setPreferredSize(new java.awt.Dimension(0, 0));
-        containerPanel.setLayout(new java.awt.CardLayout());
-
-        startPanel.setPreferredSize(new java.awt.Dimension(0, 0));
-        startPanel.setLayout(new java.awt.GridLayout(1, 0));
-
-        newTransactionButton.setText("New Transaction");
-        newTransactionButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                newTransactionButtonActionPerformed(evt);
+        mainPanel.addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentHidden(java.awt.event.ComponentEvent evt) {
+                mainPanelComponentHidden(evt);
             }
         });
-        startPanel.add(newTransactionButton);
+        getContentPane().add(mainPanel, java.awt.BorderLayout.CENTER);
 
-        containerPanel.add(startPanel, "startPanel");
+        newTransactionButton.setText("New Transaction");
+        newTransactionButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                newTransactionButtonMouseClicked(evt);
+            }
+        });
+        menuBar.add(newTransactionButton);
 
-        mainPanel.setLayout(new java.awt.BorderLayout());
-        mainPanel.add(mainPanel1, java.awt.BorderLayout.CENTER);
-
-        containerPanel.add(mainPanel, "mainPanel");
-
-        getContentPane().add(containerPanel);
-
-        jMenu1.setText("File");
-        menuBar.add(jMenu1);
-
-        jMenu2.setText("Edit");
-        menuBar.add(jMenu2);
+        transactionsButton.setText("Transactions");
+        menuBar.add(transactionsButton);
 
         setJMenuBar(menuBar);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void newTransactionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newTransactionButtonActionPerformed
-        Transaction transaction = new Transaction();
+    private void newTransactionButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_newTransactionButtonMouseClicked
+        if (!mainPanel.isVisible()) {
+            Transaction transaction = new Transaction();
+            mainPanel.setTransaction(transaction);
+            mainPanel.setEnabled(true);
+            mainPanel.setVisible(true);
+            newTransactionButton.setEnabled(false);
+            pack();
+            mainPanel.itemSearchRequestFocus();
+        }
 
-        CardLayout card = (CardLayout) containerPanel.getLayout();
-        mainPanel1.setTransaction(transaction);
-        card.show(containerPanel, "mainPanel");
-        mainPanel1.itemSearchRequestFocus();
+    }//GEN-LAST:event_newTransactionButtonMouseClicked
 
-    }//GEN-LAST:event_newTransactionButtonActionPerformed
+    private void mainPanelComponentHidden(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_mainPanelComponentHidden
+        newTransactionButton.setEnabled(true);
+    }//GEN-LAST:event_mainPanelComponentHidden
 
     /**
      * @param args the command line arguments
@@ -125,13 +119,9 @@ public class Main extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel containerPanel;
-    private javax.swing.JMenu jMenu1;
-    private javax.swing.JMenu jMenu2;
-    private javax.swing.JPanel mainPanel;
-    private pointofsales.MainPanel mainPanel1;
+    private pointofsales.MainPanel mainPanel;
     private javax.swing.JMenuBar menuBar;
-    private javax.swing.JButton newTransactionButton;
-    private javax.swing.JPanel startPanel;
+    private javax.swing.JMenu newTransactionButton;
+    private javax.swing.JMenu transactionsButton;
     // End of variables declaration//GEN-END:variables
 }

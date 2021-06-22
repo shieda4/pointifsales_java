@@ -94,7 +94,7 @@ public class AddItemDialog extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void addButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_addButtonMouseClicked
-        this.submit();
+        this._submit();
     }//GEN-LAST:event_addButtonMouseClicked
 
     private void quantityTextFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_quantityTextFieldKeyPressed
@@ -103,15 +103,15 @@ public class AddItemDialog extends javax.swing.JDialog {
             this.dispose();
         }
         if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
-            this.submit();
-        }        // TODO add your handling code here:
+            this._submit();
+        }
     }//GEN-LAST:event_quantityTextFieldKeyPressed
 
     private void quantityTextFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_quantityTextFieldFocusLost
         quantityTextField.requestFocus();
     }//GEN-LAST:event_quantityTextFieldFocusLost
 
-    private void submit() {
+    private void _submit() {
         try {
             DatabaseConnection dbConn = new DatabaseConnection();
             String stockQuery = "SELECT Stock FROM Product WHERE Id = " + this.Product + ";";
@@ -148,6 +148,7 @@ public class AddItemDialog extends javax.swing.JDialog {
                         JOptionPane.showMessageDialog(null, "Not Enough Stock", "ERROR", JOptionPane.ERROR_MESSAGE);
                     }
                 } else {
+                    quantityTextField.setText("");
                     JOptionPane.showMessageDialog(null, "Please Enter A Positive Number", "ERROR", JOptionPane.ERROR_MESSAGE);
                 }
 

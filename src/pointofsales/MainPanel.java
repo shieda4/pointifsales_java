@@ -5,8 +5,6 @@
  */
 package pointofsales;
 
-import java.awt.CardLayout;
-import java.awt.Container;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -34,68 +32,68 @@ public class MainPanel extends javax.swing.JPanel {
      * Creates new form MainPanel
      */
     private Transaction transaction;
-    
+
     DefaultTableModel itemTableModel = new DefaultTableModel(new Object[]{"ID", "Description", "Category", "Price", "Quantity", "Total"}, 0);
     DefaultTableModel productTableModel = new DefaultTableModel(new Object[]{"Product ID", "Desciption", "Category", "Price", "Stock"}, 0);
-    
-    JTable itemTable = new JTable(itemTableModel) {
-        public boolean isCellEditable(int row, int column) {
-            return false;
-        }
-    };
-    
-    JTable productTable = new JTable(productTableModel) {
-        public boolean isCellEditable(int row, int column) {
-            if (true) {
+
+    JTable itemTable;
+    JTable productTable;
+
+    public MainPanel() {
+        this.productTable = new JTable(productTableModel) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
                 return false;
             }
-            return true;
-        }
-    };
-    
-    public MainPanel() {
+        };
+        this.itemTable = new JTable(itemTableModel) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
         initComponents();
-        
+
         itemTable.setRowHeight(30);
         itemTable.getTableHeader().setResizingAllowed(false);
         itemTable.getTableHeader().setEnabled(false);
         itemTable.setRowSelectionAllowed(false);
         centerLeftPanel.add(new JScrollPane(itemTable));
-        
+
         productTable.setRowHeight(30);
         productTable.getTableHeader().setResizingAllowed(false);
         productTable.getTableHeader().setEnabled(false);
         productTable.setRowSelectionAllowed(true);
         productTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         centerRightCenterPanel.add(new JScrollPane(productTable));
-        
+
         searchTextField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
                 _buildProductTable(_getSearchedProducts());
             }
-            
+
             @Override
             public void removeUpdate(DocumentEvent e) {
                 _buildProductTable(_getSearchedProducts());
             }
-            
+
             @Override
             public void changedUpdate(DocumentEvent e) {
                 _buildProductTable(_getSearchedProducts());
             }
-            
+
         });
-        
+
     }
-    
+
     public void setTransaction(Transaction trans) {
         this.transaction = trans;
         transactionLabel.setText("Transaction ID: " + this.transaction.getId());
         refresh();
-        
+
     }
-    
+
     private List<Item> _getItems() {
         List<Item> items = new ArrayList<>();
         try {
@@ -107,20 +105,20 @@ public class MainPanel extends javax.swing.JPanel {
                     Item item = new Item(rs);
                     items.add(item);
                 }
-                
+
             } catch (SQLException ex) {
                 JOptionPane.showMessageDialog(null, ex.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
-                
+
             }
             dbConn.close();
-            
+
         } catch (SQLException ex) {
             JOptionPane.showMessageDialog(null, ex.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
-            
+
         }
         return items;
     }
-    
+
     private List<Product> _getSearchedProducts() {
         String text = searchTextField.getText();
         List<Product> products = new ArrayList<>();
@@ -135,7 +133,7 @@ public class MainPanel extends javax.swing.JPanel {
                     products.add(item);
                 }
             } catch (SQLException ex) {
-                
+
             }
             dbConn.close();
         } catch (SQLException ex) {
@@ -143,7 +141,7 @@ public class MainPanel extends javax.swing.JPanel {
         }
         return products;
     }
-    
+
     private List<Product> _getProducts() {
         List<Product> products = new ArrayList<>();
         try {
@@ -156,7 +154,7 @@ public class MainPanel extends javax.swing.JPanel {
                     products.add(item);
                 }
             } catch (SQLException ex) {
-                
+
             }
             dbConn.close();
         } catch (SQLException ex) {
@@ -164,22 +162,22 @@ public class MainPanel extends javax.swing.JPanel {
         }
         return products;
     }
-    
+
     private void _buildItemTable(List<Item> items) {
-        
+
         while (itemTableModel.getRowCount() > 0) {
             itemTableModel.removeRow(0);
         }
-        
+
         for (int i = 0; i < items.size(); i++) {
             Item transactionItem = items.get(i);
             itemTableModel.addRow(transactionItem.getTableObject());
         }
-        
+
     }
-    
+
     private void _buildProductTable(List<Product> products) {
-        
+
         while (productTableModel.getRowCount() > 0) {
             productTableModel.removeRow(0);
         }
@@ -187,12 +185,12 @@ public class MainPanel extends javax.swing.JPanel {
             Product item = products.get(i);
             productTableModel.addRow(item.getTableObject());
         }
-        
+
     }
-    
+
     private void _addItem() {
         int row = productTable.getSelectedRow();
-        
+
         int itemID = Integer.parseInt(productTableModel.getValueAt(row, 0).toString());
         String itemName = productTableModel.getValueAt(row, 1).toString();
         String itemCategory = productTableModel.getValueAt(row, 2).toString();
@@ -210,13 +208,25 @@ public class MainPanel extends javax.swing.JPanel {
         });
         addItem.setVisible(true);
     }
-    
+
+    private void _checkout() {
+        if (this.transaction.getTotal() > 0) {
+            JFrame top = (JFrame) SwingUtilities.getWindowAncestor(this);
+            CheckoutDialog checkoutDialog = new CheckoutDialog(top, true, this.transaction);
+            checkoutDialog.setTitle("CHECKOUT");
+            checkoutDialog.setSize(400, 300);
+            checkoutDialog.setLocationRelativeTo(null);
+            checkoutDialog.setVisible(true);
+        }
+
+    }
+
     public void refresh() {
         _buildProductTable(_getProducts());
         _buildItemTable(_getItems());
         totalLabel.setText("TOTAL: " + this.transaction.getTotal());
     }
-    
+
     public void itemSearchRequestFocus() {
         searchTextField.requestFocus();
     }
@@ -344,13 +354,12 @@ public class MainPanel extends javax.swing.JPanel {
         //Delete Item
         _getItems().forEach((item) -> item.discard());
         this.transaction.discard();
-        Container parent = this.getParent().getParent();
-        CardLayout card = (CardLayout) parent.getLayout();
-        card.show(parent, "startPanel");
+        setVisible(false);
+
     }//GEN-LAST:event_discardButtonMouseClicked
 
     private void finishButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_finishButtonMouseClicked
-        _getItems();
+        _checkout();
     }//GEN-LAST:event_finishButtonMouseClicked
 
     private void addButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_addButtonMouseClicked
@@ -371,18 +380,18 @@ public class MainPanel extends javax.swing.JPanel {
                     }
                     break;
                 case KeyEvent.VK_UP:
-                    
+
                     if (row > 0) {
                         productTable.setRowSelectionInterval(row - 1, row - 1);
                     }
-                
+
             }
         }
-        
+
         if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
             _addItem();
         }
-        
+
 
     }//GEN-LAST:event_searchTextFieldKeyPressed
 
