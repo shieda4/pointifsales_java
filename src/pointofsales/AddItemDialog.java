@@ -6,9 +6,10 @@
 package pointofsales;
 
 import java.awt.event.KeyEvent;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 /**
  *
@@ -19,16 +20,53 @@ public class AddItemDialog extends javax.swing.JDialog {
     /**
      * Creates new form AddItemDialog
      */
-    int Transaction, Product;
+    Transaction transaction;
+    Product product;
 
-    public AddItemDialog(java.awt.Frame parent, boolean modal, int Transaction, int Product, String Description) {
+    public AddItemDialog(java.awt.Frame parent, boolean modal, Transaction transaction, Product product) {
         super(parent, modal);
-        this.Transaction = Transaction;
-        this.Product = Product;
         initComponents();
-        itemTextField.setText(Description);
+        this.transaction = transaction;
+        this.product = product;
+        itemTextField.setText(this.product.getDescription());
         itemTextField.setEditable(false);
         quantityTextField.requestFocus();
+
+        quantityTextField.getDocument().addDocumentListener(new DocumentListener() {
+
+            private void getdifference() {
+                Runnable difference = new Runnable() {
+                    @Override
+                    public void run() {
+                        numberCheck();
+                    }
+                };
+                SwingUtilities.invokeLater(difference);
+            }
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                getdifference();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                getdifference();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                getdifference();
+            }
+        });
+    }
+
+    private void numberCheck() {
+        try {
+            float quantity = Float.parseFloat(quantityTextField.getText());
+        } catch (NumberFormatException e) {
+            quantityTextField.setText(quantityTextField.getText().substring(0, quantityTextField.getText().length() - 1));
+        }
     }
 
     /**
@@ -45,7 +83,6 @@ public class AddItemDialog extends javax.swing.JDialog {
         itemTextField = new javax.swing.JTextField();
         jLabel3 = new javax.swing.JLabel();
         quantityTextField = new javax.swing.JTextField();
-        jLabel4 = new javax.swing.JLabel();
         addButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -54,7 +91,7 @@ public class AddItemDialog extends javax.swing.JDialog {
         jPanel1.setLayout(new java.awt.GridLayout(0, 1));
 
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel1.setText("ITEM");
+        jLabel1.setText("PRODUCT");
         jPanel1.add(jLabel1);
 
         itemTextField.setHorizontalAlignment(javax.swing.JTextField.CENTER);
@@ -76,9 +113,6 @@ public class AddItemDialog extends javax.swing.JDialog {
             }
         });
         jPanel1.add(quantityTextField);
-
-        jLabel4.setText("TOTAL: ");
-        jPanel1.add(jLabel4);
 
         addButton.setText("ADD");
         addButton.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -113,56 +147,33 @@ public class AddItemDialog extends javax.swing.JDialog {
 
     private void _submit() {
         try {
-            DatabaseConnection dbConn = new DatabaseConnection();
-            String stockQuery = "SELECT Stock FROM Product WHERE Id = " + this.Product + ";";
-            ResultSet stockResultSet = dbConn.getResultQuery(stockQuery);
-            int itemStock = 0;
-            while (stockResultSet.next()) {
-                itemStock = stockResultSet.getInt("Stock");
-            }
-
-            try {
-                String existingItem = "SELECT Id FROM Item WHERE Item.Product = " + this.Product + " AND Item.Transaction = " + this.Transaction + ";";
-                ResultSet existingItemResultSet = dbConn.getResultQuery(existingItem);
-                Integer existingItemId = null;
-                while (existingItemResultSet.next()) {
-                    existingItemId = existingItemResultSet.getInt("Id");
-                }
-                int quantity = Integer.parseInt(quantityTextField.getText());
-                if (quantity > 0) {
-                    if (itemStock >= quantity) {
-                        String update = "UPDATE Product SET Stock = Stock-" + quantity + " WHERE Id = " + this.Product + ";";
-                        dbConn.executeSQL(update);
-                        if (existingItemId != null) {
-                            update = "UPDATE Item SET Quantity = Quantity+" + quantity + " WHERE Id = " + existingItemId + ";";
-                            dbConn.executeSQL(update);
-                        } else {
-                            String insert = "INSERT INTO Item(Transaction, Product, Quantity) VALUES(" + this.Transaction + "," + this.Product + "," + quantity + ");";
-                            dbConn.executeSQL(insert);
-                        }
-
-                        this.setVisible(false);
-                        this.dispose();
+            int quantity = Integer.parseInt(quantityTextField.getText());
+            if (quantity > 0) {
+                if (this.product.getStock() >= quantity) {
+                    this.product.withdraw(quantity);
+                    Item item = Item.getExistingItem(product, transaction);
+                    if (item != null) {
+                        item.deposit(quantity);
                     } else {
-                        quantityTextField.setText("");
-                        JOptionPane.showMessageDialog(null, "Not Enough Stock", "ERROR", JOptionPane.ERROR_MESSAGE);
+                        Item.insert(transaction, product, quantity);
                     }
+
+                    this.setVisible(false);
+                    this.dispose();
+
                 } else {
                     quantityTextField.setText("");
-                    JOptionPane.showMessageDialog(null, "Please Enter A Positive Number", "ERROR", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(null, "Not Enough Stock", "ERROR", JOptionPane.ERROR_MESSAGE);
                 }
-
-            } catch (NumberFormatException e) {
+            } else {
                 quantityTextField.setText("");
-                JOptionPane.showMessageDialog(null, "Only Accepts Numeric Input", "ERROR", JOptionPane.ERROR_MESSAGE);
-
-            } finally {
-                if (dbConn._getConnection() != null) {
-                    dbConn.close();
-                }
+                JOptionPane.showMessageDialog(null, "Please Enter A Positive Number", "ERROR", JOptionPane.ERROR_MESSAGE);
             }
-        } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(null, ex.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
+
+        } catch (NumberFormatException e) {
+            quantityTextField.setText("");
+            JOptionPane.showMessageDialog(null, "Only Accepts Numeric Input", "ERROR", JOptionPane.ERROR_MESSAGE);
+
         }
 
     }
@@ -172,7 +183,6 @@ public class AddItemDialog extends javax.swing.JDialog {
     private javax.swing.JTextField itemTextField;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JTextField quantityTextField;
     // End of variables declaration//GEN-END:variables

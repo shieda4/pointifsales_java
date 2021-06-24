@@ -21,7 +21,7 @@ public class CheckoutDialog extends javax.swing.JDialog {
      * Creates new form CheckoutDialog
      */
     private final Transaction transaction;
-
+    
     public CheckoutDialog(java.awt.Frame parent, boolean modal, Transaction transaction) {
         super(parent, modal);
         initComponents();
@@ -29,7 +29,7 @@ public class CheckoutDialog extends javax.swing.JDialog {
         totalTextField.setText(String.valueOf(this.transaction.getTotal()));
         totalTextField.setEditable(false);
         amountTextField.getDocument().addDocumentListener(new DocumentListener() {
-
+            
             private void getdifference() {
                 Runnable difference = new Runnable() {
                     @Override
@@ -39,26 +39,26 @@ public class CheckoutDialog extends javax.swing.JDialog {
                 };
                 SwingUtilities.invokeLater(difference);
             }
-
+            
             @Override
             public void insertUpdate(DocumentEvent e) {
                 getdifference();
             }
-
+            
             @Override
             public void removeUpdate(DocumentEvent e) {
                 getdifference();
             }
-
+            
             @Override
             public void changedUpdate(DocumentEvent e) {
                 getdifference();
             }
         });
         amountTextField.requestFocus();
-
+        
     }
-
+    
     private void _finish() {
         try {
             Float amount = Float.parseFloat(amountTextField.getText());
@@ -81,7 +81,7 @@ public class CheckoutDialog extends javax.swing.JDialog {
             JOptionPane.showMessageDialog(null, "Only Accepts Numeric Input", "ERROR", JOptionPane.ERROR_MESSAGE);
         }
     }
-
+    
     private void _getDifference() {
         try {
             float total = this.transaction.getTotal();
@@ -93,8 +93,8 @@ public class CheckoutDialog extends javax.swing.JDialog {
                 JOptionPane.showMessageDialog(null, "Please Enter A Positive Number", "ERROR", JOptionPane.ERROR_MESSAGE);
             }
         } catch (NumberFormatException e) {
-            amountTextField.setText("");
-
+            amountTextField.setText(amountTextField.getText().substring(0, amountTextField.getText().length() - 1));
+            
         }
     }
 

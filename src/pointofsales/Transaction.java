@@ -32,11 +32,15 @@ public class Transaction {
         }
     }
 
+    public Transaction(int Id) {
+        this.Id = Id;
+    }
+
     public int getId() {
         return this.Id;
     }
 
-    public void discard() {
+    public void delete() {
         try {
             DatabaseConnection dbConn = new DatabaseConnection();
             String delete = "DELETE FROM Transaction WHERE Id = " + this.Id + ";";

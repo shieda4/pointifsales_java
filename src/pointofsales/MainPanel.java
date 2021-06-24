@@ -8,12 +8,8 @@ package pointofsales;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JFrame;
-import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
@@ -70,97 +66,28 @@ public class MainPanel extends javax.swing.JPanel {
         searchTextField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
-                _buildProductTable(_getSearchedProducts());
+                _buildProductTable(Product.getProducts(searchTextField.getText()));
             }
 
             @Override
             public void removeUpdate(DocumentEvent e) {
-                _buildProductTable(_getSearchedProducts());
+                _buildProductTable(Product.getProducts(searchTextField.getText()));
             }
 
             @Override
             public void changedUpdate(DocumentEvent e) {
-                _buildProductTable(_getSearchedProducts());
+                _buildProductTable(Product.getProducts(searchTextField.getText()));
             }
 
         });
 
     }
 
-    public void setTransaction(Transaction trans) {
-        this.transaction = trans;
+    public void setTransaction(Transaction transaction) {
+        this.transaction = transaction;
         transactionLabel.setText("Transaction ID: " + this.transaction.getId());
         refresh();
 
-    }
-
-    private List<Item> _getItems() {
-        List<Item> items = new ArrayList<>();
-        try {
-            DatabaseConnection dbConn = new DatabaseConnection();
-            try {
-                String query = "SELECT * FROM Item WHERE Transaction = " + this.transaction.getId() + ";";
-                ResultSet rs = dbConn.getResultQuery(query);
-                while (rs.next()) {
-                    Item item = new Item(rs);
-                    items.add(item);
-                }
-
-            } catch (SQLException ex) {
-                JOptionPane.showMessageDialog(null, ex.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
-
-            }
-            dbConn.close();
-
-        } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(null, ex.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
-
-        }
-        return items;
-    }
-
-    private List<Product> _getSearchedProducts() {
-        String text = searchTextField.getText();
-        List<Product> products = new ArrayList<>();
-        try {
-            DatabaseConnection dbConn = new DatabaseConnection();
-            try {
-                String query = "SELECT Product.* FROM Product JOIN Category ON Product.Category = Category.Id "
-                        + "WHERE Product.Description LIKE '%" + text + "%' OR Category.Name LIKE '%" + text + "%';";
-                ResultSet rs = dbConn.getResultQuery(query);
-                while (rs.next()) {
-                    Product item = new Product(rs);
-                    products.add(item);
-                }
-            } catch (SQLException ex) {
-
-            }
-            dbConn.close();
-        } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(null, ex.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
-        }
-        return products;
-    }
-
-    private List<Product> _getProducts() {
-        List<Product> products = new ArrayList<>();
-        try {
-            DatabaseConnection dbConn = new DatabaseConnection();
-            try {
-                String query = "SELECT * FROM Product";
-                ResultSet rs = dbConn.getResultQuery(query);
-                while (rs.next()) {
-                    Product item = new Product(rs);
-                    products.add(item);
-                }
-            } catch (SQLException ex) {
-
-            }
-            dbConn.close();
-        } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(null, ex.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
-        }
-        return products;
     }
 
     private void _buildItemTable(List<Item> items) {
@@ -190,13 +117,11 @@ public class MainPanel extends javax.swing.JPanel {
 
     private void _addItem() {
         int row = productTable.getSelectedRow();
-
-        int itemID = Integer.parseInt(productTableModel.getValueAt(row, 0).toString());
-        String itemName = productTableModel.getValueAt(row, 1).toString();
-        String itemCategory = productTableModel.getValueAt(row, 2).toString();
-        String itemDescription = itemName + " - " + itemCategory;
+        Product product = new Product(Integer.parseInt(productTableModel.getValueAt(row, 0).toString()));
+        
         JFrame top = (JFrame) SwingUtilities.getWindowAncestor(this);
-        AddItemDialog addItem = new AddItemDialog(top, true, this.transaction.getId(), itemID, itemDescription);
+        AddItemDialog addItem = new AddItemDialog(top, true, this.transaction, product);
+        
         addItem.setTitle("ADD ITEM");
         addItem.setSize(400, 300);
         addItem.setLocationRelativeTo(null);
@@ -222,8 +147,8 @@ public class MainPanel extends javax.swing.JPanel {
     }
 
     public void refresh() {
-        _buildProductTable(_getProducts());
-        _buildItemTable(_getItems());
+        _buildProductTable(Product.getProducts());
+        _buildItemTable(Item.getItems(this.transaction));
         totalLabel.setText("TOTAL: " + this.transaction.getTotal());
     }
 
@@ -352,10 +277,9 @@ public class MainPanel extends javax.swing.JPanel {
     private void discardButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_discardButtonMouseClicked
         //Return Stock to Product
         //Delete Item
-        _getItems().forEach((item) -> item.discard());
-        this.transaction.discard();
+        Item.getItems(this.transaction).forEach((item) -> item.delete());
+        this.transaction.delete();
         setVisible(false);
-
     }//GEN-LAST:event_discardButtonMouseClicked
 
     private void finishButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_finishButtonMouseClicked
@@ -384,7 +308,6 @@ public class MainPanel extends javax.swing.JPanel {
                     if (row > 0) {
                         productTable.setRowSelectionInterval(row - 1, row - 1);
                     }
-
             }
         }
 
