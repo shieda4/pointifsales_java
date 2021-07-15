@@ -21,8 +21,8 @@ public class Main extends javax.swing.JFrame {
         mainPanel.setVisible(false);
         pack();
     }
-    
-    public void closeMainPanel(){
+
+    public void closeMainPanel() {
         mainPanel.setVisible(false);
     }
 
@@ -37,8 +37,12 @@ public class Main extends javax.swing.JFrame {
 
         mainPanel = new pointofsales.MainPanel();
         menuBar = new javax.swing.JMenuBar();
-        newTransactionButton = new javax.swing.JMenu();
         transactionsButton = new javax.swing.JMenu();
+        newTransactionMenu = new javax.swing.JMenuItem();
+        jMenuItem1 = new javax.swing.JMenuItem();
+        jMenu1 = new javax.swing.JMenu();
+        productsMenuItem = new javax.swing.JMenuItem();
+        addProductMenuItem = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(1200, 675));
@@ -50,38 +54,70 @@ public class Main extends javax.swing.JFrame {
         });
         getContentPane().add(mainPanel, java.awt.BorderLayout.CENTER);
 
-        newTransactionButton.setText("New Transaction");
-        newTransactionButton.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                newTransactionButtonMouseClicked(evt);
+        transactionsButton.setText("Transaction");
+
+        newTransactionMenu.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F1, 0));
+        newTransactionMenu.setText("New Transaction");
+        newTransactionMenu.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                newTransactionMenuActionPerformed(evt);
             }
         });
-        menuBar.add(newTransactionButton);
+        transactionsButton.add(newTransactionMenu);
 
-        transactionsButton.setText("Transactions");
+        jMenuItem1.setText("View Transactions");
+        transactionsButton.add(jMenuItem1);
+
         menuBar.add(transactionsButton);
+
+        jMenu1.setText("Product");
+
+        productsMenuItem.setText("Products");
+        productsMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                productsMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu1.add(productsMenuItem);
+
+        addProductMenuItem.setText("Add Product");
+        addProductMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addProductMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu1.add(addProductMenuItem);
+
+        menuBar.add(jMenu1);
 
         setJMenuBar(menuBar);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void newTransactionButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_newTransactionButtonMouseClicked
+    private void mainPanelComponentHidden(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_mainPanelComponentHidden
+        newTransactionMenu.setEnabled(true);
+    }//GEN-LAST:event_mainPanelComponentHidden
+
+    private void newTransactionMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newTransactionMenuActionPerformed
         if (!mainPanel.isVisible()) {
             Transaction transaction = new Transaction();
             mainPanel.setTransaction(transaction);
             mainPanel.setEnabled(true);
             mainPanel.setVisible(true);
-            newTransactionButton.setEnabled(false);
+            newTransactionMenu.setEnabled(false);
             pack();
             mainPanel.itemSearchRequestFocus();
         }
+    }//GEN-LAST:event_newTransactionMenuActionPerformed
 
-    }//GEN-LAST:event_newTransactionButtonMouseClicked
+    private void productsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_productsMenuItemActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_productsMenuItemActionPerformed
 
-    private void mainPanelComponentHidden(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_mainPanelComponentHidden
-        newTransactionButton.setEnabled(true);
-    }//GEN-LAST:event_mainPanelComponentHidden
+    private void addProductMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addProductMenuItemActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_addProductMenuItemActionPerformed
 
     /**
      * @param args the command line arguments
@@ -119,9 +155,13 @@ public class Main extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JMenuItem addProductMenuItem;
+    private javax.swing.JMenu jMenu1;
+    private javax.swing.JMenuItem jMenuItem1;
     private pointofsales.MainPanel mainPanel;
     private javax.swing.JMenuBar menuBar;
-    private javax.swing.JMenu newTransactionButton;
+    private javax.swing.JMenuItem newTransactionMenu;
+    private javax.swing.JMenuItem productsMenuItem;
     private javax.swing.JMenu transactionsButton;
     // End of variables declaration//GEN-END:variables
 }
